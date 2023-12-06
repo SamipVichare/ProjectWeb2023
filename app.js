@@ -1,0 +1,147 @@
+const express = require('express');
+const cors = require('cors');
+const Movie = require('./models/Movie');
+const movieService = require('./movieService');
+const db = require('./database'); // Import your db module
+
+const app = express();
+const PORT = process.env.PORT || 3000;
+
+app.use(cors());
+app.use(express.json());
+
+// Replace this with your actual MongoDB connection string
+const connectionString = "mongodb+srv://vicharesamip:admin@admin.2e0txqd.mongodb.net/sample_mflix";
+
+// Use a promise to start the server after the connection is established
+db.initialize(connectionString)
+  .then(() => {
+    // Define the route for adding a new Movie
+    app.post('/api/Movies', async (req, res) => {
+      try {
+        const newMovieData = req.body;
+
+        // Validate that the required fields are present in the request body
+        if (!newMovieData.title || !newMovieData.plot || !newMovieData.directors) {
+          return res.status(400).json({ error: 'Invalid request. Title, plot, and directors are required.' });
+        }
+
+        // Use the addNewMovie function from the movieService module to add the new Movie
+        const addedMovie = await movieService.addNewMovie(newMovieData);
+
+        // Respond with the created Movie object and a status code of 201 (Created)
+        res.status(201).json(addedMovie);
+        console.log('Data inserted successfully:', addedMovie);
+
+      } catch (error) {
+        // If there's an error during the process, return a 500 status code and an error message
+        console.error('Error adding new Movie:', error);
+        res.status(500).json({ error: 'Internal Server Error' });
+      }
+    });
+
+    // Define the route for getting all Movies with optional pagination and title filtering
+    app.get('/api/Movies', async (req, res) => {
+      try {
+        const page = parseInt(req.query.page) || 1;
+        const perPage = parseInt(req.query.perPage) || 10;
+        const title = req.query.title || '';
+
+        // Use the getAllMovies function from the movieService module
+        const movies = await movieService.getAllMovies(page, perPage, title);
+
+        // Respond with the array of Movie objects
+        res.json(movies);
+      } catch (error) {
+        // If there's an error during the process, return a 500 status code and an error message
+        console.error('Error getting Movies:', error);
+        res.status(500).json({ error: 'Internal Server Error' });
+      }
+    });
+
+    // Define the route for getting a specific Movie by _id
+    app.get('/api/Movies/:id', async (req, res) => {
+      try {
+        const movieId = req.params.id;
+  
+        // Use the getMovieById function from the movieService module
+        const movie = await movieService.getMovieById(movieId);
+  
+        // Check if the movie with the provided id exists
+        if (!movie) {
+          return res.status(404).json({ error: 'Movie not found' });
+        }
+  
+        // Respond with the Movie object
+        res.json(movie);
+      } catch (error) {
+        // If there's an error during the process, return a 500 status code and an error message
+        console.error('Error getting Movie by ID:', error);
+        res.status(500).json({ error: 'Internal Server Error' });
+      }
+    });
+
+    // Define the route for updating a specific Movie by _id
+    app.put('/api/Movies/:id', async (req, res) => {
+      try {
+        const movieId = req.params.id;
+        const updatedMovieData = req.body;
+    
+        // Validate that the required fields are present in the request body
+        if (!updatedMovieData.title || !updatedMovieData.plot || !updatedMovieData.directors) {
+          return res.status(400).json({ error: 'Invalid request. Title, plot, and directors are required.' });
+        }
+    
+        // Use the updateMovieById function from the movieService module
+        const updatedMovie = await movieService.updateMovieById(updatedMovieData, movieId);
+    
+        // Check if the movie with the provided id exists
+        if (!updatedMovie) {
+          return res.status(404).json({ error: 'Movie not found' });
+        }
+    
+        // Respond with the updated Movie object
+        res.json(updatedMovie);
+        console.log('Data updated successfully:', updatedMovie);
+    
+      } catch (error) {
+        // If there's an error during the process, return a 500 status code and an error message
+        console.error('Error updating Movie by ID:', error);
+        res.status(500).json({ error: 'Internal Server Error' });
+      }
+    });
+
+    // Define the route for deleting a specific Movie by _id
+    app.delete('/api/Movies/:id', async (req, res) => {
+      try {
+        const movieId = req.params.id;
+    
+        // Use the deleteMovieById function from the movieService module
+        const deletedMovie = await movieService.deleteMovieById(movieId);
+    
+        // Check if the movie with the provided id exists
+        if (!deletedMovie) {
+          return res.status(404).json({ error: 'Movie not found' });
+        }
+    
+        // Respond with a success message
+        res.json({ message: 'Movie deleted successfully' });
+    
+        // Print a console message indicating successful data deletion
+        console.log('Data has been deleted:', deletedMovie);
+    
+      } catch (error) {
+        // If there's an error during the process, return a 500 status code and an error message
+        console.error('Error deleting Movie by ID:', error);
+        res.status(500).json({ error: 'Internal Server Error' });
+      }
+    });
+
+    // Start the server
+    app.listen(PORT, () => {
+      console.log(`Server is running on port ${PORT}`);
+    });
+  })
+  .catch((err) => {
+    console.error('Failed to connect to MongoDB. Check your connection string.');
+  });

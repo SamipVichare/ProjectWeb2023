@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Search Results</title>
+</head>
+<body>
+    <h1>Search Results</h1>
+  {{#each movies}}
+  <div>
+    <h2>{{safeAccess this "plot"}}</h2>
+    <p>{{safeAccess this "title"}}</p>
+    <!-- Other movie properties... -->
+  </div>
+{{/each}}
+</body>
+</html>

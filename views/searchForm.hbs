@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Search Movies</title>
+</head>
+<body>
+    <h1>Search Movies</h1>
+    <form action="/search" method="post">
+        <label for="page">Page:</label>
+        <input type="text" id="page" name="page" required>
+        <br>
+        <label for="perPage">Per Page:</label>
+        <input type="text" id="perPage" name="perPage" required>
+        <br>
+        <label for="title">Title:</label>
+        <input type="text" id="title" name="title">
+        <br>
+        <button type="submit">Search</button>
+    </form>
+</body>
+</html>
